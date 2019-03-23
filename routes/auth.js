@@ -10,6 +10,7 @@ router.get('/login', authController.getLogin);
 // post login
 router.post('/login', authController.postLogin);
 
+// post logout
 router.post('/logout', authController.postLogout);
 
 
