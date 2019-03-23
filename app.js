@@ -47,9 +47,11 @@ app.use(
 );
 
 // Find user 
-// Change this after setting up authentication
 app.use((req, res, next) => {
-  User.findById('5c8d1c0f5573936a2cc784fe')
+  if (!req.session.user) {
+    return next();
+  }
+  User.findById(req.session.user._id)
     .then(user => {
       req.user = user;
       next();
