@@ -1,23 +1,22 @@
 const path = require('path');
-
 const express = require('express');
 const bodyParser = require('body-parser');
-// database
+// database mongo w/ mongoose
 const mongoose = require('mongoose');
 // express session
 const session = require('express-session');
 // session store for mongoDB
 const MongoDBStore = require('connect-mongodb-session')(session);
-
 // Error handling controller
 const errorController = require('./controllers/error');
-
 // User Model
 const User = require('./models/user');
+// mongo DB URI
 const MONGODB_URI = 'mongodb+srv://jdaake:KIsMYluCDtG8RnPi@cluster0-ndib1.mongodb.net/shop';
-
 // express
 const app = express();
+
+// Store session key
 const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: 'sessions'
@@ -27,7 +26,7 @@ const store = new MongoDBStore({
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-// Route paths
+// Route files
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
@@ -59,13 +58,14 @@ app.use((req, res, next) => {
     .catch(err => console.log(err));
 });
 
-
+// use routes
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
-
+// 404
 app.use(errorController.get404);
 
+// connect to mongoDB
 mongoose.connect(MONGODB_URI)
   .then(result => {
     User.findOne().then(user => {
