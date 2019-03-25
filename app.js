@@ -68,18 +68,6 @@ app.use(errorController.get404);
 // connect to mongoDB
 mongoose.connect(MONGODB_URI)
   .then(result => {
-    User.findOne().then(user => {
-      // create user if none exist
-      if (!user) {
-        const user = new User({
-          name: 'Jordan',
-          email: 'daakejl@gmail.com',
-          cart: {
-            items: []
-          }
-        });
-        user.save();
-      }
-    });
     app.listen(3000);
-  }).catch(err => console.log(err));
+  })
+  .catch(err => console.log(err));
