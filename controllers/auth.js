@@ -3,18 +3,30 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 
 exports.getLogin = (req, res, next) => {
+    let message = req.flash('error');
+    if (message.length > 0) {
+        message = message[0];
+    } else {
+        message = null;
+    }
     res.render('auth/login', {
         path: '/login',
         pageTitle: 'Login',
-        isAuthenticated: false
+        errorMessage: message
     });
 };
 
 exports.getSignup = (req, res, next) => {
+    let message = req.flash('error');
+    if (message.length > 0) {
+        message = message[0];
+    } else {
+        message = null;
+    }
     res.render('auth/signup', {
         path: '/signup',
-        pageTitle: "Signup",
-        isAuthenticated: false
+        pageTitle: 'Signup',
+        errorMessage: message
     });
 };
 
@@ -26,6 +38,7 @@ exports.postLogin = (req, res, next) => {
         })
         .then(user => {
             if (!user) {
+                req.flash('error', 'Invalid email or password.');
                 return res.redirect('login');
             }
             bcrypt.compare(password, user.password)
@@ -38,6 +51,7 @@ exports.postLogin = (req, res, next) => {
                             res.redirect('/');
                         });
                     }
+                    req.flash('error', 'Invalid email or password.');
                     res.redirect('/login');
                 })
                 .catch(err => {
@@ -64,23 +78,29 @@ exports.postSignup = (req, res, next) => {
         })
         .then(userDoc => {
             if (userDoc) {
+                req.flash('error', 'Email address already in use.');
                 return res.redirect('./signup');
             }
-            return bcrypt
-                .hash(password, 12)
-                .then(hashedPassword => {
-                    const user = new User({
-                        email: email,
-                        password: hashedPassword,
-                        cart: {
-                            items: []
-                        }
+            if (password !== confirmPassword) {
+                req.flash('error', 'Passwords do not match.');
+                return res.redirect('./signup');
+            } else {
+                return bcrypt
+                    .hash(password, 12)
+                    .then(hashedPassword => {
+                        const user = new User({
+                            email: email,
+                            password: hashedPassword,
+                            cart: {
+                                items: []
+                            }
+                        });
+                        return user.save();
+                    })
+                    .then(result => {
+                        res.redirect('/login');
                     });
-                    return user.save();
-                })
-                .then(result => {
-                    res.redirect('/login');
-                });
+            }
         })
         .catch(err => console.log(err));
 };

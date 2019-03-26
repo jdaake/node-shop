@@ -7,6 +7,10 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 // session store for mongoDB
 const MongoDBStore = require('connect-mongodb-session')(session);
+// Cross Site Request Forgery protection
+const csrf = require('csurf');
+// 
+const flash = require('connect-flash');
 // Error handling controller
 const errorController = require('./controllers/error');
 // User Model
@@ -21,6 +25,8 @@ const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: 'sessions'
 });
+
+const csrfProtection = csrf();
 
 // Views
 app.set('view engine', 'ejs');
@@ -45,6 +51,9 @@ app.use(
   })
 );
 
+app.use(csrfProtection);
+app.use(flash());
+
 // Find user 
 app.use((req, res, next) => {
   if (!req.session.user) {
@@ -56,6 +65,12 @@ app.use((req, res, next) => {
       next();
     })
     .catch(err => console.log(err));
+});
+
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
 });
 
 // use routes
