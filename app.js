@@ -1,5 +1,7 @@
 const path = require('path');
+// express framework
 const express = require('express');
+// body parser
 const bodyParser = require('body-parser');
 // database mongo w/ mongoose
 const mongoose = require('mongoose');
@@ -7,9 +9,9 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 // session store for mongoDB
 const MongoDBStore = require('connect-mongodb-session')(session);
-// Cross Site Request Forgery protection
+// Cross Site Request Forgery (CSRF) Token
 const csrf = require('csurf');
-// 
+// Login/Signup auth handling
 const flash = require('connect-flash');
 // Error handling controller
 const errorController = require('./controllers/error');
@@ -17,7 +19,7 @@ const errorController = require('./controllers/error');
 const User = require('./models/user');
 // mongo DB URI
 const MONGODB_URI = 'mongodb+srv://jdaake:KIsMYluCDtG8RnPi@cluster0-ndib1.mongodb.net/shop';
-// express
+// invoke express
 const app = express();
 
 // Store session key
@@ -41,7 +43,11 @@ const authRoutes = require('./routes/auth');
 app.use(bodyParser.urlencoded({
   extended: false
 }));
+
+// path to directory
 app.use(express.static(path.join(__dirname, 'public')));
+
+// set session collection object
 app.use(
   session({
     secret: 'my secret key',
@@ -51,7 +57,10 @@ app.use(
   })
 );
 
+// csrf token
 app.use(csrfProtection);
+
+// connect-flash
 app.use(flash());
 
 // Find user 
@@ -67,13 +76,14 @@ app.use((req, res, next) => {
     .catch(err => console.log(err));
 });
 
+// sets authentication and csrf token globally
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
   res.locals.csrfToken = req.csrfToken();
   next();
 });
 
-// use routes
+// routes
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
