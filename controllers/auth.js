@@ -1,6 +1,16 @@
+const nodemailer = require('nodemailer');
+
+const sendgridTransport = require('nodemailer-sendgrid-transport');
+
 const User = require('../models/user');
 
 const bcrypt = require('bcryptjs');
+
+const transporter = nodemailer.createTransport(sendgridTransport({
+    auth: {
+        api_key: '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'
+    }
+}));
 
 exports.getLogin = (req, res, next) => {
     let message = req.flash('error');
@@ -79,11 +89,11 @@ exports.postSignup = (req, res, next) => {
         .then(userDoc => {
             if (userDoc) {
                 req.flash('error', 'Email address already in use.');
-                return res.redirect('./signup');
+                return res.redirect('/signup');
             }
             if (password !== confirmPassword) {
                 req.flash('error', 'Passwords do not match.');
-                return res.redirect('./signup');
+                return res.redirect('/signup');
             } else {
                 return bcrypt
                     .hash(password, 12)
@@ -99,8 +109,29 @@ exports.postSignup = (req, res, next) => {
                     })
                     .then(result => {
                         res.redirect('/login');
-                    });
+                        return transporter.sendMail({
+                            to: email,
+                            from: 'shop@nodejs.com',
+                            subject: 'Signup succeeded',
+                            html: '<h1>You have successfully signed up!</h1>'
+                        });
+                    })
+                    .catch(err => console.log(err));
             }
         })
         .catch(err => console.log(err));
+};
+
+exports.getReset = (req, res, next) => {
+    let message = req.flash('error');
+    if (message.length > 0) {
+        message = message[0];
+    } else {
+        message = null;
+    }
+    res.render('auth/reset', {
+        path: '/reset',
+        pageTitle: 'Reset Password',
+        errorMessage: message
+    });
 };

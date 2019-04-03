@@ -1,4 +1,6 @@
 const path = require('path');
+// port
+const port = 3000;
 // express framework
 const express = require('express');
 // body parser
@@ -11,9 +13,9 @@ const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 // Cross Site Request Forgery (CSRF) Token
 const csrf = require('csurf');
-// Login/Signup auth handling
+// Login/Signup auth error handling
 const flash = require('connect-flash');
-// Error handling controller
+// Error controller
 const errorController = require('./controllers/error');
 // User Model
 const User = require('./models/user');
@@ -21,7 +23,6 @@ const User = require('./models/user');
 const MONGODB_URI = 'mongodb+srv://jdaake:KIsMYluCDtG8RnPi@cluster0-ndib1.mongodb.net/shop';
 // invoke express
 const app = express();
-
 // Store session key
 const store = new MongoDBStore({
   uri: MONGODB_URI,
@@ -93,6 +94,7 @@ app.use(errorController.get404);
 // connect to mongoDB
 mongoose.connect(MONGODB_URI)
   .then(result => {
-    app.listen(3000);
+    app.listen(port);
+    console.log(`App is listening on port ${port}`);
   })
   .catch(err => console.log(err));

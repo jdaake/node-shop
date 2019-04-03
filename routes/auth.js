@@ -10,6 +10,8 @@ router.get('/login', authController.getLogin);
 // get signup
 router.get('/signup', authController.getSignup);
 
+// get reset
+router.get('/reset', authController.getReset);
 // post login
 router.post('/login', authController.postLogin);
 
