@@ -3,6 +3,10 @@ const express = require('express');
 const adminController = require('../controllers/admin');
 
 const isAuth = require('../middleware/is-Auth');
+const {
+    check,
+    body
+} = require('express-validator/check');
 
 const router = express.Router();
 
@@ -13,13 +17,46 @@ router.get('/add-product', isAuth, adminController.getAddProduct);
 router.get('/products', isAuth, adminController.getProducts);
 
 // post add product
-router.post('/add-product', isAuth, adminController.postAddProduct);
+router.post('/add-product', [
+    body('title', 'Invalid Title. Please choose another title.')
+    // .isString()
+    .isLength({
+        min: 3,
+        max: 140
+    })
+    .trim(),
+    body('imageUrl', 'Invalid Image URL. Please choose another URL.').isURL(),
+    body('price', 'Invalid Price. Please choose another URL.').isFloat(),
+    body('description', 'Invalid Description. Please choose another description.')
+    .isLength({
+        min: 5,
+        max: 400
+    })
+    .trim()
+], isAuth, adminController.postAddProduct);
 
 // get edit product
 router.get('/edit-product/:productId', isAuth, adminController.getEditProduct);
 
 // post edit product
-router.post('/edit-product', isAuth, adminController.postEditProduct);
+router.post('/edit-product', [
+        body('title', 'Invalid Title. Please choose another title.')
+        // .isString()
+        .isLength({
+            min: 3,
+            max: 140
+        })
+        .trim(),
+        body('imageUrl', 'Invalid Image URL. Please choose another URL.').isURL(),
+        body('price', 'Invalid Price. Please choose another URL.').isFloat(),
+        body('description', 'Invalid Description. Please choose another description.')
+        .isLength({
+            min: 5,
+            max: 400
+        })
+        .trim()
+    ],
+    isAuth, adminController.postEditProduct);
 
 // delete products
 router.post('/delete-product', isAuth, adminController.postDeleteProduct);
