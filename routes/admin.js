@@ -25,8 +25,7 @@ router.post('/add-product', [
         max: 140
     })
     .trim(),
-    body('imageUrl', 'Invalid Image URL. Please choose another URL.').isURL(),
-    body('price', 'Invalid Price. Please choose another URL.').isFloat(),
+    body('price', 'Invalid Price.').isFloat(),
     body('description', 'Invalid Description. Please choose another description.')
     .isLength({
         min: 5,
@@ -47,8 +46,7 @@ router.post('/edit-product', [
             max: 140
         })
         .trim(),
-        body('imageUrl', 'Invalid Image URL. Please choose another URL.').isURL(),
-        body('price', 'Invalid Price. Please choose another URL.').isFloat(),
+        body('price', 'Invalid Price.').isFloat(),
         body('description', 'Invalid Description. Please choose another description.')
         .isLength({
             min: 5,

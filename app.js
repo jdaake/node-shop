@@ -5,6 +5,8 @@ const port = 3000;
 const express = require('express');
 // body parser
 const bodyParser = require('body-parser');
+// multer
+const multer = require('multer');
 // database mongo w/ mongoose
 const mongoose = require('mongoose');
 // express session
@@ -31,6 +33,26 @@ const store = new MongoDBStore({
 
 const csrfProtection = csrf();
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images');
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
 // Views
 app.set('view engine', 'ejs');
 app.set('views', 'views');
@@ -45,8 +67,16 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 
+app.use(
+  multer({
+    storage: fileStorage,
+    fileFilter: fileFilter
+  }).single('image')
+);
+
 // path to directory
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // set session collection object
 app.use(
@@ -89,7 +119,6 @@ app.use((req, res, next) => {
     });
 });
 
-
 // routes
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
@@ -98,7 +127,7 @@ app.use(authRoutes);
 app.use(errorController.get404);
 // 500
 app.get('/500', errorController.get500);
-
+// Global error handling middleware
 app.use((error, req, res, next) => {
   // res.redirect('/500');
   res.status(500).render('500', {
