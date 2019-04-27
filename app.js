@@ -19,6 +19,10 @@ const csrf = require('csurf');
 const flash = require('connect-flash');
 // Error controller
 const errorController = require('./controllers/error');
+// Shop controller
+const shopController = require('./controllers/shop');
+// isAuth middleware
+const isAuth = require('./middleware/is-Auth');
 // User Model
 const User = require('./models/user');
 // mongo DB URI
@@ -57,6 +61,7 @@ const fileFilter = (req, file, cb) => {
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
+
 // Route files
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -88,8 +93,7 @@ app.use(
   })
 );
 
-// csrf token
-app.use(csrfProtection);
+
 
 // connect-flash
 app.use(flash());
@@ -97,7 +101,6 @@ app.use(flash());
 // sets authentication and csrf token globally
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
-  res.locals.csrfToken = req.csrfToken();
   next();
 });
 
@@ -117,6 +120,16 @@ app.use((req, res, next) => {
     .catch(err => {
       next(new Error(err));
     });
+});
+
+// post order
+app.post('/create-order', isAuth, shopController.postOrder);
+
+// csrf token
+app.use(csrfProtection);
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
 });
 
 // routes
