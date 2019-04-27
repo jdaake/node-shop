@@ -6,7 +6,6 @@ const PDFDocument = require('pdfkit');
 const ITEMS_PER_PAGE = 3;
 const stripe = require("stripe")("sk_test_vtsWinq3yippHSZIBmF9IvVe00CEcz9tgd");
 
-
 exports.getProducts = (req, res, next) => {
   const page = +req.query.page || 1;
   let totalItems;

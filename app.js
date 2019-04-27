@@ -98,7 +98,7 @@ app.use(
 // connect-flash
 app.use(flash());
 
-// sets authentication and csrf token globally
+// sets authentication
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
   next();
@@ -127,6 +127,7 @@ app.post('/create-order', isAuth, shopController.postOrder);
 
 // csrf token
 app.use(csrfProtection);
+// setting csrf token
 app.use((req, res, next) => {
   res.locals.csrfToken = req.csrfToken();
   next();
