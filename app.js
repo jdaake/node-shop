@@ -1,10 +1,12 @@
 const path = require('path');
-// port
-const port = 3000;
 // express framework
 const express = require('express');
+// file system
+const fs = require('fs');
 // body parser
 const bodyParser = require('body-parser');
+// https
+const https = require('https');
 // multer
 const multer = require('multer');
 // database mongo w/ mongoose
@@ -26,9 +28,15 @@ const isAuth = require('./middleware/is-Auth');
 // User Model
 const User = require('./models/user');
 // mongo DB URI
-const MONGODB_URI = 'mongodb+srv://jdaake:KIsMYluCDtG8RnPi@cluster0-ndib1.mongodb.net/shop';
+const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0-ndib1.mongodb.net/${process.env.MONGO_DATABASE}`;
 // invoke express
 const app = express();
+// Helmet secure headers
+const helmet = require('helmet');
+// compression
+const compression = require('compression');
+// morgan loggin
+const morgan = require('morgan');
 // Store session key
 const store = new MongoDBStore({
   uri: MONGODB_URI,
@@ -36,6 +44,9 @@ const store = new MongoDBStore({
 });
 
 const csrfProtection = csrf();
+
+const privateKey = fs.readFileSync('server.key');
+const certificate = fs.readFileSync('server.cert');
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -60,7 +71,6 @@ const fileFilter = (req, file, cb) => {
 // Views
 app.set('view engine', 'ejs');
 app.set('views', 'views');
-
 
 // Route files
 const adminRoutes = require('./routes/admin');
@@ -92,8 +102,6 @@ app.use(
     store: store
   })
 );
-
-
 
 // connect-flash
 app.use(flash());
@@ -133,6 +141,19 @@ app.use((req, res, next) => {
   next();
 });
 
+const accessLog = fs.createWriteStream(path.join(__dirname, 'access.log'), {
+  flags: 'a'
+});
+
+// helmet 
+app.use(helmet());
+// compression
+app.use(compression());
+// morgan
+app.use(morgan('combined', {
+  stream: accessLog
+}));
+
 // routes
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
@@ -154,7 +175,12 @@ app.use((error, req, res, next) => {
 // connect to mongoDB
 mongoose.connect(MONGODB_URI)
   .then(result => {
-    app.listen(port);
-    console.log(`App is listening on port ${port}`);
+    // https
+    //   .createServer({
+    //     key: privateKey,
+    //     cert: certificate
+    //   }, app)
+    app.listen(process.env.PORT || 3000);
+    console.log(`App is listening on port ${process.env.PORT}`);
   })
   .catch(err => console.log(err));
